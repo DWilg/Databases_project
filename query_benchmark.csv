@@ -1,0 +1,77 @@
+query,mysql_time,postgres_time,mongo_time,redis_time
+rides_by_lyft,26.5982,8.5783,0.1201,0.0134
+rides_from_north_station,5.3824,1.9754,0.0061,0.2492
+price_distance_filter,22.5235,9.2186,0.0086,1.2547
+rides_in_december,36.7891,9.4165,0.0117,0.2657
+ride_names_temp_above_40,36.9132,12.0002,0.0073,0.8143
+rides_wind_gt5_humidity_lt07,34.6384,9.298,0.0189,0.9473
+avg_price_by_cab_type,21.4715,4.4646,0.0439,5.0212
+ride_counts_by_hour,15.2973,3.6028,0.01,0.0061
+
+# Proponowałbym tutaj histogram
+# wyciagniecie danych z 4 baz, zapytania, każde zapytanie wykonano 10 razy:
+queries = {
+    # easy_1 - łatwe 1
+    "rides_by_lyft": {
+        "sql": "SELECT * FROM Ride WHERE cab_type = 'Lyft';",
+        "mongo": {"cab_type": "Lyft"},
+        "redis": '@cab_type:Lyft'
+    },
+    # easy_2 - łatwe 2
+    "rides_from_north_station": {
+        "sql": "SELECT * FROM Ride WHERE source = 'North Station';",
+        "mongo": {"source": "North Station"},
+        "redis": '@source:"North Station"'
+    },
+    # medium_1 - średniozaawansowane 1
+    "price_distance_filter": {
+        "sql": "SELECT * FROM Price WHERE distance > 2 AND price < 30 ORDER BY price DESC;",
+        "mongo": {"price.distance": {"$gt": 2}, "price.price": {"$lt": 30}},
+        "redis": '@price_distance:[2 +inf] @price_price:[-inf 30]'
+    },
+    # medium_2 - sredniozaawansowane 2
+    "rides_in_december": {
+        "sql": "SELECT * FROM Time WHERE month = 12;",
+        "mongo": {"time.month": 12},
+        "redis": '@month:[12 12]'
+    },
+    # adv_1 - zaawansowane 1
+    "ride_names_temp_above_40": {
+        "sql": """SELECT r.name FROM Ride r
+                 JOIN Weather w ON r.weather_id = w.id
+                 JOIN Temperature t ON w.temperature_id = t.id
+                 WHERE t.temperatureHigh > 40;""",
+        "mongo": {"weather.temperature.temperatureHigh": {"$gt": 40}},
+        "redis": '@temp_high:[40 +inf]'
+    },
+    # adv_2 - zaawansowane 2 
+    "rides_wind_gt5_humidity_lt07": {
+        "sql": """SELECT r.* FROM Ride r
+                 JOIN Weather w ON r.weather_id = w.id
+                 JOIN Wind wi ON w.wind_id = wi.id
+                 WHERE wi.windSpeed > 5 AND w.humidity < 0.7;""",
+        "mongo": {
+            "weather.wind.windSpeed": {"$gt": 5},
+            "weather.humidity": {"$lt": 0.7}
+        },
+        "redis": '@wind_speed:[5 +inf] @weather_humidity:[-inf 0.7]'
+    },
+    # complex_1 - złożone 1
+    "avg_price_by_cab_type": {
+        "sql": """SELECT r.cab_type, AVG(p.price)
+                 FROM Ride r
+                 JOIN Price p ON r.price_id = p.id
+                 GROUP BY r.cab_type;""",
+        "mongo": "agg_avg_price",
+        "redis": "agg_avg_price"
+    },
+    # complex_2 - złożone 2
+    "ride_counts_by_hour": {
+        "sql": """SELECT t.hour, COUNT(*) FROM Ride r
+                 JOIN Time t ON r.time_id = t.id
+                 GROUP BY t.hour;""",
+        "mongo": "agg_count_hour",
+        "redis": "agg_count_hour"
+    }
+}
+# jest 8 zapytań 2 * 4 poziomy zapytań [łatwe1, łatwe2, średniozaawansowane1, średniozaawansowane2, zaawansowane1, zaawansowane2, złożone1, złożone2]

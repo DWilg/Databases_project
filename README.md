@@ -37,9 +37,11 @@ docker exec my_mongo mongorestore \
 
 <!-- 4. How to run populate redis data -->
 <!-- Below is one commend -->
-unzip -p redis_commands.zip redis_commands.txt | docker exec -i my_redis redis-cli -a example_redis_password --pipe 
+unzip -p redis_commands.zip redis_commands_fixed.txt | docker exec -i my_redis redis-cli -a example_redis_password --pipe 
 
+ <!-- unzip -l redis_commands.zip  - zawartość zipa -->
 
 docker exec -it my_redis redis-cli -a example_redis_password DBSIZE         
 
 <!-- should print:  693071  -->
+
