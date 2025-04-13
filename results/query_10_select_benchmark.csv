@@ -7,8 +7,3 @@ ride_names_temp_above_40,36.9132,12.0002,0.0073,0.8143
 rides_wind_gt5_humidity_lt07,34.6384,9.298,0.0189,0.9473
 avg_price_by_cab_type,21.4715,4.4646,0.0439,5.0212
 ride_counts_by_hour,15.2973,3.6028,0.01,0.0061
-
-# Proponowałbym tutaj histogram
-# wyciagniecie danych z 4 baz, zapytania, każde zapytanie wykonano 10 razy:
-
-# w pliku query_select.py jest 8 zapytań  2 * 4 poziomy zapytań [łatwe1, łatwe2, średniozaawansowane1, średniozaawansowane2, zaawansowane1, zaawansowane2, złożone1, złożone2]

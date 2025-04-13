@@ -7,6 +7,3 @@ ride_names_temp_above_40,3.5084,1.9252,0.0017,0.0012
 rides_wind_gt5_humidity_lt07,3.34,1.388,0.0464,0.0073
 avg_price_by_cab_type,3.2983,0.622,0.0504,0.0083
 ride_counts_by_hour,1.6642,0.4907,0.0053,0.0008
-
-
-# wykonano dla 1 powtórzenia, można porównać z query_10_select_benchmarks.csv
