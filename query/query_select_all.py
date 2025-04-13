@@ -35,7 +35,7 @@ def get_redis_conn():
     return redis.Redis(
         host='localhost',
         port=6379,
-        decode_responses=True
+        decode_responses=False
     )
 
 # Funkcje testujące wydajność
