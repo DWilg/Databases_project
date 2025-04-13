@@ -6,9 +6,14 @@ import psycopg2
 from pymongo import MongoClient
 import redis
 import matplotlib.pyplot as plt
+import logging
+
+# Ustawienia logowania
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger()
 
 # Liczba powtórzeń każdego zapytania
-REPEATS = 10
+REPEATS = 1
 
 # Lista zapytań do wykonania
 queries = {
@@ -138,7 +143,7 @@ def redis_aggregate(r, qtype):
                 "REDUCE", "AVG", "1", "@price_price", "AS", "avgPrice"
             )
         except redis.exceptions.ResponseError as e:
-            print(f"Redis error: {e}")
+            logger.error(f"Redis error: {e}")
             return None
     elif qtype == "agg_count_hour":
         try:
@@ -148,8 +153,9 @@ def redis_aggregate(r, qtype):
                 "REDUCE", "COUNT", "0", "AS", "count"
             )
         except redis.exceptions.ResponseError as e:
-            print(f"Redis error: {e}")
+            logger.error(f"Redis error: {e}")
             return None
+
 # Benchmarkowanie
 results = []
 
@@ -163,19 +169,21 @@ pg_cursor = pg_conn.cursor()
 mongo_coll = mongo_db["rides"]
 
 for label, q in queries.items():
-    print(f"Benchmarking query: {label}")
+    logger.info(f"Benchmarking query: {label}")
 
     # MySQL
     def mysql_q():
         mysql_cursor.execute(q["sql"])
         mysql_cursor.fetchall()
     mysql_time = benchmark(mysql_q)
+    logger.info(f"MySQL query {label} time: {mysql_time}s")
 
     # PostgreSQL
     def pg_q():
         pg_cursor.execute(q["sql"])
         pg_cursor.fetchall()
     pg_time = benchmark(pg_q)
+    logger.info(f"PostgreSQL query {label} time: {pg_time}s")
 
     # MongoDB
     if isinstance(q["mongo"], dict):
@@ -185,6 +193,7 @@ for label, q in queries.items():
         def mongo_q():
             mongo_aggregate(mongo_db, q["mongo"])
     mongo_time = benchmark(mongo_q)
+    logger.info(f"MongoDB query {label} time: {mongo_time}s")
 
     # Redis
     if "agg" in q["redis"]:
@@ -194,6 +203,7 @@ for label, q in queries.items():
         def redis_q():
             redis_conn.execute_command("FT.SEARCH", "rides_index", q["redis"])
     redis_time = benchmark(redis_q)
+    logger.info(f"Redis query {label} time: {redis_time}s")
 
     results.append({
         "query": label,
@@ -206,8 +216,9 @@ for label, q in queries.items():
 # Zapis do CSV
 df = pd.DataFrame(results)
 df.to_csv("query_benchmark.csv", index=False)
-print("Benchmark zakończony — wyniki zapisane do query_benchmark.csv")
+logger.info("Benchmark zakończony — wyniki zapisane do query_benchmark.csv")
 
+# Wykres
 df.set_index("query")[["mysql_time", "postgres_time", "mongo_time", "redis_time"]].plot(kind='bar', figsize=(12, 6))
 plt.title("Porównanie czasów zapytań (s)")
 plt.ylabel("Czas (s)")
@@ -218,5 +229,3 @@ plt.grid(axis='y', linestyle='--', alpha=0.7)
 plt.legend(title="Baza danych")
 plt.savefig("query_benchmark_chart.png", dpi=300)
 plt.show()
-
-

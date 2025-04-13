@@ -1,0 +1,12 @@
+query,mysql_time,postgres_time,mongo_time,redis_time
+rides_by_lyft,2.6275,1.0391,0.1529,0.0195
+rides_from_north_station,0.6582,0.2832,0.0022,0.0005
+price_distance_filter,2.4711,1.0707,0.0468,0.0125
+rides_in_december,4.1134,1.1199,0.0021,0.0013
+ride_names_temp_above_40,3.5084,1.9252,0.0017,0.0012
+rides_wind_gt5_humidity_lt07,3.34,1.388,0.0464,0.0073
+avg_price_by_cab_type,3.2983,0.622,0.0504,0.0083
+ride_counts_by_hour,1.6642,0.4907,0.0053,0.0008
+
+
+# wykonano dla 1 powtórzenia, można porównać z query_10_select_benchmarks.csv
