@@ -2,23 +2,17 @@ import time
 import random
 import matplotlib.pyplot as plt
 
-# MongoDB
 from pymongo import MongoClient
 from bson import ObjectId
 
-# PostgreSQL
 import psycopg2
 
-# MySQL
 import mysql.connector
 
-# Redis
 import redis
 
-# Wyniki pomiarów
 results = {}
 
-# === MongoDB ===
 def test_mongodb():
     client = MongoClient(
         'mongodb://example_mongo_user:example_mongo_password@localhost:27017/',
@@ -39,7 +33,6 @@ def test_mongodb():
     avg_time = (end - start) * 1000 / 1000
     results["MongoDB"] = avg_time
 
-# === PostgreSQL ===
 def test_postgresql():
     conn = psycopg2.connect(
         host='localhost',
@@ -62,7 +55,6 @@ def test_postgresql():
     avg_time = (end - start) * 1000 / 1000
     results["PostgreSQL"] = avg_time
 
-# === MySQL ===
 def test_mysql():
     conn = mysql.connector.connect(
         host='localhost',
@@ -108,6 +100,10 @@ test_redis()
 # === Wykres porównawczy ===
 labels = list(results.keys())
 times = list(results.values())
+
+df = pd.DataFrame(list(results.items()), columns=["Database", "Avg_Update_Time_ms"])
+df.to_csv("query_update_benchmark.csv", index=False)
+print("Wyniki zapisane do update_benchmark.csv")
 
 plt.figure(figsize=(10, 6))
 plt.bar(labels, times, color=["#4c72b0", "#dd8452", "#55a868", "#c44e52"])
